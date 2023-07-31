@@ -519,6 +519,11 @@ EXPORT_FUNC int UPC_OverlayFriendInvitationShow(void *context, void *inOptIdList
     return 0;
 }
 
+EXPORT_FUNC int UPC_OverlayFriendInvitationShow_Extended(void *context,  void *inOptIdListUtf8, uint inOptIdListLength, void *unk_0, void *unk_1)
+{
+    PRINT_DEBUG("%s %p %p\n", __FUNCTION__, unk_0, unk_1);
+    return 0;
+}
 EXPORT_FUNC int UPC_OverlayFriendSelectionFree(void *context, void *inSelectedFriends)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
@@ -528,12 +533,6 @@ EXPORT_FUNC int UPC_OverlayFriendSelectionFree(void *context, void *inSelectedFr
 EXPORT_FUNC int UPC_OverlayFriendSelectionShow(void *context, void *inIdListUtf8, unsigned inIdListLength, void *outSelectedFriends, void *inCallback, void *inCallbackData)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
-    return 0;
-}
-
-EXPORT_FUNC int UPC_OverlayFriendSelectionShow_Extended(void *context, void *inIdListUtf8, unsigned inIdListLength, void *outSelectedFriends, void *inCallback, void *inCallbackData,void *unk_0, void *unk_1)
-{
-    PRINT_DEBUG("%s %p %p\n", __FUNCTION__, unk_0, unk_1);
     return 0;
 }
 
