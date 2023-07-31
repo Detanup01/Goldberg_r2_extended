@@ -519,7 +519,7 @@ EXPORT_FUNC int UPC_OverlayFriendInvitationShow(void *context, void *inOptIdList
     return 0;
 }
 
-EXPORT_FUNC int UPC_OverlayFriendInvitationShow_Extended(void *context,  void *inOptIdListUtf8, uint inOptIdListLength, void *unk_0, void *unk_1)
+EXPORT_FUNC int UPC_OverlayFriendInvitationShow_Extended(void *context,  void *inOptIdListUtf8, unsigned inOptIdListLength, void *unk_0, void *unk_1)
 {
     PRINT_DEBUG("%s %p %p\n", __FUNCTION__, unk_0, unk_1);
     return 0;
