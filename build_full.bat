@@ -6,6 +6,6 @@ cl /std:c++17 /LD /DEMU_RELEASE_BUILD /DNDEBUG emu.cpp User32.lib Shell32.lib /E
 echo.
 call build_env_x64.bat
 cl /std:c++17 /LD /DEMU_RELEASE_BUILD /DNDEBUG emu.cpp User32.lib Shell32.lib /EHsc /MP12 /Ox /link /OUT:full_nodebug\uplay_r2_loader64.dll
-echo.
+echo Built
 pause
-echo.
+echo Done
