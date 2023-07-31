@@ -444,6 +444,11 @@ EXPORT_FUNC int UPC_InstallLanguageGet_Extended(void *context, const char **outI
 }
 
 //EXPORT_FUNC int UPC_LaunchApp(void *context, unsigned inProductId, void *??? always zero)
+EXPORT_FUNC int UPC_LaunchApp(void *context, unsigned inProductId, void * MustBeZero)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 1;
+}
 
 EXPORT_FUNC int UPC_MultiplayerInvite(void *context, void *inUserIdUtf8, void *inOptCallback, void *inOptCallbackData)
 {
@@ -463,6 +468,12 @@ EXPORT_FUNC int UPC_MultiplayerSessionClear(void *context)
     return 0;
 }
 
+EXPORT_FUNC int UPC_MultiplayerSessionClear_Extended(void *context, void *unk_0, void *unk_1)
+{
+    PRINT_DEBUG("%s %p %p\n", __FUNCTION__, unk_0, unk_1);
+    return 0;
+}
+
 EXPORT_FUNC int UPC_MultiplayerSessionFree(void *context, void *inMultiplayerSession)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
@@ -478,6 +489,12 @@ EXPORT_FUNC int UPC_MultiplayerSessionGet(void *context, void *outMultiplayerSes
 EXPORT_FUNC int UPC_MultiplayerSessionSet(void *context, void *inMultiplayerSession)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_MultiplayerSessionSet_Extended(void *context, void *inMultiplayerSession, void *unk_0, void *unk_1)
+{
+    PRINT_DEBUG("%s %p %p\n", __FUNCTION__, unk_0, unk_1);
     return 0;
 }
 
@@ -514,7 +531,13 @@ EXPORT_FUNC int UPC_OverlayFriendSelectionShow(void *context, void *inIdListUtf8
     return 0;
 }
 
-EXPORT_FUNC int UPC_OverlayMicroAppShow(void *context, void *inAppName, void *inOptMicroAppParamList, void *unknown1, void *unknown2)
+EXPORT_FUNC int UPC_OverlayFriendSelectionShow_Extended(void *context, void *inIdListUtf8, unsigned inIdListLength, void *outSelectedFriends, void *inCallback, void *inCallbackData,void *unk_0, void *unk_1)
+{
+    PRINT_DEBUG("%s %p %p\n", __FUNCTION__, unk_0, unk_1);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_OverlayMicroAppShow(void *context, void *inAppName, void *inOptMicroAppParamList, void * inCallback, void *inOptCallbackData)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
     return 0;
@@ -523,6 +546,12 @@ EXPORT_FUNC int UPC_OverlayMicroAppShow(void *context, void *inAppName, void *in
 EXPORT_FUNC int UPC_OverlayNotificationShow(void *context, unsigned inId)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_OverlayNotificationShow_Extended(void *context, unsigned inId, void *unk_0, void *unk_1)
+{
+    PRINT_DEBUG("%s %p %p\n", __FUNCTION__, unk_0, unk_1);
     return 0;
 }
 
@@ -619,6 +648,12 @@ EXPORT_FUNC int UPC_ProductListGet(void *context, char *inOptUserIdUtf8, unsigne
 EXPORT_FUNC int UPC_RichPresenceSet(void *context, unsigned inId, void *inOptTokenList)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_RichPresenceSet_Extended(void *context, unsigned inId, void *inOptTokenList, void *unk_0, void *unk_1)
+{
+    PRINT_DEBUG("%s %p %p\n", __FUNCTION__, unk_0, unk_1);
     return 0;
 }
 
@@ -826,6 +861,74 @@ EXPORT_FUNC int UPC_StoreProductsShow(void *context, unsigned *inProductTagList)
     return 0;
 }
 
+// Here I have no idea if pointers need or anything like that, it is an IntPtr/void* can be struct ponter or anything.
+EXPORT_FUNC int UPC_StreamingCurrentUserCountryFree(void *context, void *inUtf8Country)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_StreamingCurrentUserCountryGet(void *context, void *outUtf8Country, void *inCallback, void *inCallbackData)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_StreamingDeviceTypeGet(void *context,void *outType, void *inCallback, void *inCallbackData)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_StreamingInputGamepadTypeGet(void *context,void *outType, void *inCallback, void *inCallbackData)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_StreamingInputTypeGet(void *context,void *outType, void *inCallback, void *inCallbackData)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_StreamingNetworkDelayForInputGet(void *context,void *outDelayMs, void *inCallback, void *inCallbackData)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_StreamingNetworkDelayForVideoGet(void *context,void *outDelayMs, void *inCallback, void *inCallbackData)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_StreamingNetworkDelayRoundtripGet(void *context,void *outDelayMs, void *inCallback, void *inCallbackData)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_StreamingResolutionFree(void *context,void *inResolution)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_StreamingResolutionGet(void *context,void *outResolution, void *inCallback, void *inCallbackData)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_StreamingTypeGet(void *context,void *outType, void *inCallback, void *inCallbackData)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+
 EXPORT_FUNC const char *UPC_TicketGet(void *context)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
@@ -910,5 +1013,11 @@ EXPORT_FUNC int UPC_UserGet(void *context, char *inOptUserIdUtf8, struct uplay_u
 EXPORT_FUNC int UPC_UserPlayedWithAdd(void *context, char *inUserIdUtf8List, int inListLength)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
+    return 0;
+}
+
+EXPORT_FUNC int UPC_UserPlayedWithAdd_Extended(void *context, char *inUserIdUtf8List, int inListLength, void *unk_0, void *unk_1)
+{
+    PRINT_DEBUG("%s %p %p\n", __FUNCTION__, unk_0, unk_1);
     return 0;
 }
