@@ -27,6 +27,7 @@
 #include <list>
 #include <filesystem>
 #include <string>
+#include <objbase.h>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 std::string get_full_lib_path()
@@ -315,6 +316,18 @@ static std::string get_profile_string(LPCSTR name, LPCSTR key, LPCSTR def, LPCST
     int result = GetPrivateProfileStringA(name, key, def, temp, sizeof(temp), filename);
     return std::string(temp, result);
 }
+static std::string GUIDToString(GUID *guid) {
+    char guid_string[37]; // 32 hex chars + 4 hyphens + null terminator
+    snprintf(
+          guid_string, sizeof(guid_string),
+          "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+          guid->Data1, guid->Data2, guid->Data3,
+          guid->Data4[0], guid->Data4[1], guid->Data4[2],
+          guid->Data4[3], guid->Data4[4], guid->Data4[5],
+          guid->Data4[6], guid->Data4[7]);
+    return guid_string;
+}
+
 EXPORT_FUNC int UPC_Init(unsigned inVersion, int appid)
 {
     PRINT_DEBUG("%s %u %i\n", __FUNCTION__, inVersion, appid);
@@ -351,6 +364,16 @@ EXPORT_FUNC int UPC_Init(unsigned inVersion, int appid)
     emulator_config.game_appid = get_profile_string("Settings", "GameId", "66333333-e688-4d1f-b693-39267e890df2", ini_path.c_str());
     emulator_config.ticket = "";
     emulator_config.appid = appid;
+
+    std::string generateNewId = get_profile_string("Settings", "GenerateNewId", "false", ini_path.c_str());
+
+    if (generateNewId == "true")
+    {
+        GUID gidReference;
+        HRESULT hCreateGuid = CoCreateGuid( &gidReference );
+        emulator_config.uplay_id = GUIDToString(&gidReference);
+    }
+
 
     {
             char depots_raw[32767] = {};

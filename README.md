@@ -1,6 +1,9 @@
 # Goldberg r2 Extended
 "Extended" version of goldberg R2 uplay emulator.
 
+Added:
+Option for generating unique userId
+
 Original ReadMe:
 # Goldberg uplay r2 emu.
 
