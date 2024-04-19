@@ -372,6 +372,8 @@ EXPORT_FUNC int UPC_Init(unsigned inVersion, int appid)
         GUID gidReference;
         HRESULT hCreateGuid = CoCreateGuid( &gidReference );
         emulator_config.uplay_id = GUIDToString(&gidReference);
+        WritePrivateProfileString("Settings", "GenerateNewId", "false", ini_path.c_str());
+        WritePrivateProfileString("Settings", "UserId", emulator_config.uplay_id, ini_path.c_str());
     }
 
 
