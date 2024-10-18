@@ -468,6 +468,13 @@ EXPORT_FUNC int UPC_InstallLanguageGet_Extended(void *context, const char **outI
     return 0;
 }
 
+EXPORT_FUNC int UPC_IsCrossBootAllowed(void *context, unsigned inProductId, bool *outIsCrossBootAllowed, void * a4, void * a5)
+{
+    PRINT_DEBUG("%s\n", __FUNCTION__);
+    *outIsCrossBootAllowed = false;
+    return 0;
+}
+
 //EXPORT_FUNC int UPC_LaunchApp(void *context, unsigned inProductId, void *??? always zero)
 EXPORT_FUNC int UPC_LaunchApp(void *context, unsigned inProductId, void * MustBeZero)
 {
