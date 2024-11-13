@@ -28,6 +28,7 @@
 #include <filesystem>
 #include <string>
 #include <objbase.h>
+#include "upc.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 std::string get_full_lib_path()
@@ -81,9 +82,10 @@ struct context_data {
     std::queue<cb_data> cb;
     emu_config config;
 };
+static emu_config emulator_config;
 
 
-EXPORT_FUNC char * UPC_ErrorToString(int param_1)
+EXPORT_FUNC const char * UPC_ErrorToString(int param_1)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
     switch(param_1) {
@@ -193,7 +195,7 @@ EXPORT_FUNC void UPC_Cancel(void *context, int inHandle)
 
 }
 
-static emu_config emulator_config;
+
 EXPORT_FUNC context_data *UPC_ContextCreate(unsigned inVersion, void *inOptSetting)
 {
     PRINT_DEBUG("%s %u %p\n", __FUNCTION__, inVersion, inOptSetting);
@@ -409,28 +411,23 @@ EXPORT_FUNC int UPC_Init(unsigned inVersion, int appid)
     return 0;
 }
 
-struct chunk_list {
-    uint32_t number_chunks;
-    uint32_t padding = 0;
-    uint32_t *chunk_list;
-};
 
-EXPORT_FUNC int UPC_InstallChunkListFree(void *context, chunk_list *aChunkList)
+EXPORT_FUNC int UPC_InstallChunkListFree(void *context, UPC_InstallChunkList *aChunkList)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
     if (!context || !aChunkList) return -0xd;
-    if (aChunkList->chunk_list) delete[] aChunkList->chunk_list;
+    if (aChunkList->list) delete[] aChunkList->list;
     delete aChunkList;
     return 0;
 }
 
-EXPORT_FUNC int UPC_InstallChunkListGet(void *context, chunk_list **outChunkList)
+EXPORT_FUNC int UPC_InstallChunkListGet(void *context, UPC_InstallChunkList **outChunkList)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
     if (!context || !outChunkList) return -0xd;
-    chunk_list *chunks = new chunk_list();
-    chunks->number_chunks = 0;
-    chunks->chunk_list = NULL;
+    UPC_InstallChunkList *chunks = new UPC_InstallChunkList();
+    chunks->count = 0;
+    chunks->list = NULL;
     *outChunkList = chunks;
     return 0;
 }
@@ -606,57 +603,34 @@ EXPORT_FUNC int UPC_ProductConsumeSignatureFree(void *context, void *inResponseS
 }
 
 
-struct product {
-    product(uint32_t a, uint32_t b) {
-        appid = a;
-        type = b;
-        if (type == 4) unknown1 = 4;
-        else unknown1 = 1;
-    }
-
-    uint32_t appid;
-    uint32_t type; //1 = app, 2 = dlc, 4 = ???
-    uint32_t unknown1; //if (type == 4) 4 else 1
-    uint32_t unk_3 = 3; // always 3
-    uint32_t unk_0 = 0; // always zero
-    uint32_t unk_1 = 1; // always 1
-};
-
-struct product_list {
-    uint32_t number = 0;
-    uint32_t padding = 0;
-    struct product **out;
-};
-
-
-EXPORT_FUNC int UPC_ProductListFree(void *context, product_list *inProductList)
+EXPORT_FUNC int UPC_ProductListFree(void *context, UPC_ProductList *inProductList)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
     if (inProductList) {
-        for (unsigned i = 0; i < inProductList->number; ++i) {
-            delete inProductList->out[i];
+        for (unsigned i = 0; i < inProductList->count; ++i) {
+            delete inProductList->list[i];
         }
 
-        delete[] inProductList->out;
+        delete[] inProductList->list;
     }
 
     delete inProductList;
     return 0;
 }
 
-EXPORT_FUNC int UPC_ProductListGet(void *context, char *inOptUserIdUtf8, unsigned inFilter, product_list **outProductList, void *inCallback, void *inCallbackData) //CB: 1 argument, 0 val
+EXPORT_FUNC int UPC_ProductListGet(void *context, char *inOptUserIdUtf8, unsigned inFilter, UPC_ProductList **outProductList, void *inCallback, void *inCallbackData) //CB: 1 argument, 0 val
 {
     PRINT_DEBUG("%s %p %s %u %p %p %p\n", __FUNCTION__, context, inOptUserIdUtf8, inFilter, outProductList, inCallback, inCallbackData);
     context_data *data = (context_data *)context;
     data->cb.push(cb_data(inCallback, inCallbackData, 0));
-    std::list<product> products;
-    products.push_back(product(data->config.appid, 1));
+    std::list<UPC_Product> products;
+    products.push_back(UPC_Product(data->config.appid, 1));
     for (auto & dlc : data->config.dlcs) {
-        products.push_back(product(dlc, 2));
+        products.push_back(UPC_Product(dlc, 2));
     }
 
     for (auto & item : data->config.items) {
-        products.push_back(product(item, 4));
+        products.push_back(UPC_Product(item, 4));
     }
     // for (unsigned i = 0; i < 200; ++i) {
     //     products.push_back(product(data->config.appid + i, 2));
@@ -664,14 +638,14 @@ EXPORT_FUNC int UPC_ProductListGet(void *context, char *inOptUserIdUtf8, unsigne
     //products.push_back(product(0x1572, 2)); //fenyx dlc 1
 
     unsigned index = 0;
-    product_list *pr_list = new product_list();
-    pr_list->out = new product*[products.size()];
+    UPC_ProductList *pr_list = new UPC_ProductList();
+    pr_list->list = new UPC_Product*[products.size()];
     for (auto & p: products) {
-        pr_list->out[index] = new product(p);
+        pr_list->list[index] = new UPC_Product(p);
         ++index;
     }
 
-    pr_list->number = index;
+    pr_list->count = index;
     *outProductList = pr_list;
     return 0x10000;
 }
@@ -712,40 +686,24 @@ EXPORT_FUNC int UPC_StorageFileDelete(void *context, char *inFileNameUtf8)
 }
 
 
-//file name + file_size are important
-struct file_data {
-    char *file_name; //note: NULL terminated
-    uint32_t *unknown; //seemingly unused pointer to 4 bytes of zeroes
-    uint32_t file_size;
-    uint32_t padding;
-    uint64_t last_modified; //unix timestamp in ms
-};
-
-struct file_list {
-    uint32_t number;
-    uint32_t padding = 0;
-    struct file_data **files;
-};
-
-
-EXPORT_FUNC int UPC_StorageFileListFree(void *context, file_list *inStorageFileList)
+EXPORT_FUNC int UPC_StorageFileListFree(void *context, UPC_StorageFileList *inStorageFileList)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
     if (!inStorageFileList) return -0xd;
-    if (inStorageFileList->number) {
-        for (int i = 0; i < inStorageFileList->number; ++i) {
-            delete[] inStorageFileList->files[i]->file_name;
-            delete inStorageFileList->files[i]->unknown;
-            delete inStorageFileList->files[i];
+    if (inStorageFileList->count) {
+        for (int i = 0; i < inStorageFileList->count; ++i) {
+            delete[] inStorageFileList->list[i]->fileNameUtf8;
+            delete[] inStorageFileList->list[i]->legacyNameUtf8;
+            delete inStorageFileList->list[i];
         }
     }
 
-    delete[] inStorageFileList->files;
+    delete[] inStorageFileList->list;
     delete inStorageFileList;
     return 0;
 }
 
-EXPORT_FUNC int UPC_StorageFileListGet(void *context, file_list **outStorageFileList)
+EXPORT_FUNC int UPC_StorageFileListGet(void *context, UPC_StorageFileList **outStorageFileList)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
     if (!context || !outStorageFileList) return -0xd;
@@ -758,28 +716,27 @@ EXPORT_FUNC int UPC_StorageFileListGet(void *context, file_list **outStorageFile
         }
     }
 
-    struct file_list *fl = new file_list();
-    fl->number = list.size();
-    fl->files = new file_data*[fl->number];
+    UPC_StorageFileList *fl = new UPC_StorageFileList();
+    fl->count = list.size();
+    fl->list = new UPC_StorageFile*[fl->count];
     unsigned index = 0;
     for (auto & file : list) {
         unsigned long file_size = std::filesystem::file_size(file);
         std::string file_name = file.path().filename().string();
         if (file_size < EXTRA_SAVE_PADDING) {
-            --fl->number;
+            --fl->count;
             continue;
         }
 
-        file_data *f_data = new file_data();
-        f_data->file_name = new char[file_name.size() + 1];
-        file_name.copy(f_data->file_name, file_name.size());
-        f_data->file_name[file_name.size()] = 0;
-        f_data->unknown = new uint32_t;
-        *f_data->unknown = 0;
-        f_data->padding = 0;
-        f_data->file_size = file_size - EXTRA_SAVE_PADDING;
-        f_data->last_modified = std::chrono::duration_cast<std::chrono::milliseconds>(file.last_write_time().time_since_epoch()).count();
-        fl->files[index] = f_data;
+        UPC_StorageFile *f_data = new UPC_StorageFile();
+        f_data->fileNameUtf8 = new char[file_name.size() + 1];
+        file_name.copy(f_data->fileNameUtf8, file_name.size());
+        f_data->fileNameUtf8[file_name.size()] = 0;
+        file_name.copy(f_data->legacyNameUtf8, file_name.size());
+        f_data->legacyNameUtf8[file_name.size()] = 0;
+        f_data->size = file_size - EXTRA_SAVE_PADDING;
+        f_data->lastModifiedMs = std::chrono::duration_cast<std::chrono::milliseconds>(file.last_write_time().time_since_epoch()).count();
+        fl->list[index] = f_data;
         ++index;
     }
 
@@ -790,10 +747,9 @@ EXPORT_FUNC int UPC_StorageFileListGet(void *context, file_list **outStorageFile
 EXPORT_FUNC int UPC_StorageFileOpen(void *context, char *inFileNameUtf8, unsigned inFlags, int *outHandle)
 {
     PRINT_DEBUG("%s %s %u\n", __FUNCTION__, inFileNameUtf8, inFlags);
-    //inFlags 0x1 = read?
-    //inFlags 0x2 = write?
+    UPC_FileOpenMode flags = (UPC_FileOpenMode)inFlags;
     int oflag = _O_BINARY | _O_CREAT | _O_RDWR;
-    if (inFlags == 0x2) oflag |= _O_TRUNC;
+    if (flags == UPC_FileOpenMode_Read) oflag |= _O_TRUNC;
     context_data *data = (context_data *)context;
     int file_handle = _open((data->config.save_directory / inFileNameUtf8).string().c_str(), oflag, _S_IREAD | _S_IWRITE);
     *outHandle = file_handle;
