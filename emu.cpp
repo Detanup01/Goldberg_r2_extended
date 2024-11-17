@@ -165,9 +165,17 @@ EXPORT_FUNC int UPC_AvatarFree(void *context, void *inImageRGBA)
     return 0;
 }
 
-EXPORT_FUNC int UPC_AvatarGet(void *context, void *inOptUserIdUtf8, unsigned inSize, void *outImageRGBA, void *inCallback, void *inCallbackData)
+EXPORT_FUNC int UPC_AvatarGet(void *context, const char *inOptUserIdUtf8, unsigned inSize, void *outImageRGBA, void *inCallback, void *inCallbackData)
 {
-    PRINT_DEBUG("%s\n", __FUNCTION__);
+    PRINT_DEBUG("%s %s %d\n", __FUNCTION__, inOptUserIdUtf8, inSize);
+
+    unsigned properSize = 4000; //64x64
+    if (inSize == 1)
+        properSize = 10000; // 128x128
+    if (inSize == 2)
+        properSize = 40000; // 256x256
+    // read from file and drop into out
+
     return 0;
 }
 
@@ -723,18 +731,23 @@ EXPORT_FUNC int UPC_StorageFileListGet(void *context, UPC_StorageFileList **outS
     for (auto & file : list) {
         unsigned long file_size = std::filesystem::file_size(file);
         std::string file_name = file.path().filename().string();
+#ifdef NO_PADDING
         if (file_size < EXTRA_SAVE_PADDING) {
             --fl->count;
             continue;
         }
-
+#endif
         UPC_StorageFile *f_data = new UPC_StorageFile();
         f_data->fileNameUtf8 = new char[file_name.size() + 1];
         file_name.copy(f_data->fileNameUtf8, file_name.size());
         f_data->fileNameUtf8[file_name.size()] = 0;
         file_name.copy(f_data->legacyNameUtf8, file_name.size());
         f_data->legacyNameUtf8[file_name.size()] = 0;
+#ifdef NO_PADDING
+        f_data->size = file_size;
+#else
         f_data->size = file_size - EXTRA_SAVE_PADDING;
+#endif
         f_data->lastModifiedMs = std::chrono::duration_cast<std::chrono::milliseconds>(file.last_write_time().time_since_epoch()).count();
         fl->list[index] = f_data;
         ++index;
@@ -760,7 +773,11 @@ EXPORT_FUNC int UPC_StorageFileRead(void *context, int inHandle, int inBytesToRe
 {
     PRINT_DEBUG("%s %i %i %u\n", __FUNCTION__, inHandle, inBytesToRead, inBytesReadOffset);
     context_data *data = (context_data *)context;
+#ifdef NO_PADDING
+    _lseek(inHandle, inBytesReadOffset, SEEK_SET);
+#else
     _lseek(inHandle, inBytesReadOffset + EXTRA_SAVE_PADDING, SEEK_SET);
+#endif
     int ret = _read(inHandle, outData, inBytesToRead);
     int out = 0;
     if (ret >= 0) {
@@ -776,8 +793,10 @@ EXPORT_FUNC int UPC_StorageFileWrite(void *context, int inHandle, void *inData, 
 {
     PRINT_DEBUG("%s %i %i\n", __FUNCTION__, inHandle, inSize);
     context_data *data = (context_data *)context;
+#ifndef NO_PADDING
     char padding_data[EXTRA_SAVE_PADDING] = {};
     _write(inHandle, padding_data, sizeof(padding_data));
+#endif
     int ret = _write(inHandle, inData, inSize);
     int out = 0;
     if (ret < 0) {
@@ -909,10 +928,10 @@ EXPORT_FUNC int UPC_StreamingResolutionGet(void *context,void *outResolution, vo
     return 0;
 }
 
-EXPORT_FUNC int UPC_StreamingTypeGet(void *context,void *outType, void *inCallback, void *inCallbackData)
+EXPORT_FUNC int UPC_StreamingTypeGet(void *context, void *outType, void *inCallback, void *inCallbackData)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
-    return 0;
+    return 0x200;
 }
 
 
