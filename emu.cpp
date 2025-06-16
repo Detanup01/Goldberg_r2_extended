@@ -259,6 +259,12 @@ EXPORT_FUNC int UPC_EventRegisterHandler(void *context, unsigned inType, void *i
     return 0;
 }
 
+EXPORT_FUNC int UPC_EventUnregisterHandler(void *context, unsigned inType)
+{
+    PRINT_DEBUG("%s %u\n", __FUNCTION__, inType);
+    return 0;
+}
+
 EXPORT_FUNC int UPC_FriendAdd(void *context, void *inSearchStringUtf8, void *inOptCallback, void *inOptCallbackData)
 {
     PRINT_DEBUG("%s\n", __FUNCTION__);
