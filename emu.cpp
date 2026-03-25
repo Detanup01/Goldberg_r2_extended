@@ -769,8 +769,7 @@ EXPORT_FUNC int UPC_StorageFileOpen(void *context, char *inFileNameUtf8, unsigne
     PRINT_DEBUG("%s %s %u\n", __FUNCTION__, inFileNameUtf8, inFlags);
     UPC_FileOpenMode flags = (UPC_FileOpenMode)inFlags;
     int oflag = _O_BINARY | _O_CREAT | _O_RDWR;
-    // is this necessary? it wipes save file at startup on ACS
-    // if (flags == UPC_FileOpenMode_Read) oflag |= _O_TRUNC;
+    if (flags == UPC_FileOpenMode_Write) oflag |= _O_TRUNC;
     context_data *data = (context_data *)context;
     int file_handle = _open((data->config.save_directory / inFileNameUtf8).string().c_str(), oflag, _S_IREAD | _S_IWRITE);
     *outHandle = file_handle;
