@@ -1,0 +1,88 @@
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build Type'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - release
+          - debug
+          - both
+      architecture:
+        description: 'Architecture'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - x64
+          - x86
+          - both
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        env:
+          ARCH_INPUT: ${{ github.event.inputs.architecture }}
+          TYPE_INPUT: ${{ github.event.inputs.build_type }}
+        run: |
+          if [ "$ARCH_INPUT" = "both" ]; then
+            ARCHS='["x64", "x86"]'
+          else
+            ARCHS="[\"$ARCH_INPUT\"]"
+          fi
+          
+          if [ "$TYPE_INPUT" = "both" ]; then
+            TYPES='["release", "debug"]'
+          else
+            TYPES="[\"$TYPE_INPUT\"]"
+          fi
+          
+          echo "matrix={\"arch\":$ARCHS,\"build_type\":$TYPES}" >> $GITHUB_OUTPUT
+
+  build:
+    needs: setup
+    runs-on: windows-latest
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+    
+    steps:
+      - uses: actions/checkout@v6.0.2 # de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1.13.0 # a102174a2b586eec2ea151a69e6fd14404a8ce7c
+        with:
+          arch: ${{ matrix.arch }}
+          
+      - name: Build
+        shell: cmd
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+          BUILD_ARCH: ${{ matrix.arch }}
+        run: |
+          if "%BUILD_TYPE%"=="release" (
+            if "%BUILD_ARCH%"=="x64" (
+              build_x64.bat < NUL
+            ) else (
+              build_x86.bat < NUL
+            )
+          ) else (
+            if "%BUILD_ARCH%"=="x64" (
+              build_debug_x64.bat < NUL
+            ) else (
+              build_debug_x86.bat < NUL
+            )
+          )
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7.0.0 # bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: upc_r2_loader-${{ matrix.build_type }}-${{ matrix.arch }}
+          path: ${{ matrix.build_type }}${{ matrix.arch == 'x64' && '64' || '86' }}\*.dll

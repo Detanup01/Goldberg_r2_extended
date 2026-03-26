@@ -747,6 +747,7 @@ EXPORT_FUNC int UPC_StorageFileListGet(void *context, UPC_StorageFileList **outS
         f_data->fileNameUtf8 = new char[file_name.size() + 1];
         file_name.copy(f_data->fileNameUtf8, file_name.size());
         f_data->fileNameUtf8[file_name.size()] = 0;
+        f_data->legacyNameUtf8 = new char[file_name.size() + 1];
         file_name.copy(f_data->legacyNameUtf8, file_name.size());
         f_data->legacyNameUtf8[file_name.size()] = 0;
 #ifdef NO_PADDING
@@ -768,7 +769,7 @@ EXPORT_FUNC int UPC_StorageFileOpen(void *context, char *inFileNameUtf8, unsigne
     PRINT_DEBUG("%s %s %u\n", __FUNCTION__, inFileNameUtf8, inFlags);
     UPC_FileOpenMode flags = (UPC_FileOpenMode)inFlags;
     int oflag = _O_BINARY | _O_CREAT | _O_RDWR;
-    if (flags == UPC_FileOpenMode_Read) oflag |= _O_TRUNC;
+    if (flags == UPC_FileOpenMode_Write) oflag |= _O_TRUNC;
     context_data *data = (context_data *)context;
     int file_handle = _open((data->config.save_directory / inFileNameUtf8).string().c_str(), oflag, _S_IREAD | _S_IWRITE);
     *outHandle = file_handle;
